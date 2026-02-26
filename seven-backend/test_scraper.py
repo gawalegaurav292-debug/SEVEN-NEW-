@@ -1,21 +1,12 @@
 import asyncio
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent / "app"))
-
-from scrapers.sites.hm_scraper import HMScraper
+from app.scraper.sites.hm_scraper import HMScraper
 
 
 async def main():
-    scraper = HMScraper(headless=False)
-
+    scraper = HMScraper()
     results = await scraper.search("white t-shirt", 5)
 
-    print("\n====================")
-    print("Products found:", len(results))
-    print("====================")
-
+    print("\nTEST RESULTS:\n")
     for r in results:
         print(r)
 
