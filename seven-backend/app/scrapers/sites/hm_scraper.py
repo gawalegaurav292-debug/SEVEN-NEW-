@@ -1,71 +1,114 @@
-import aiohttp
 import asyncio
-from urllib.parse import quote
+import json
+import requests
+from playwright.async_api import async_playwright
 
 
 class HMScraper:
-    BASE_API = "https://api.hm.com/search-services/v1/en_us/search/articles"
+    SEARCH_API = "https://api.hm.com/search-services/v1/en_us/search/articles"
+    BASE_URL = "https://www2.hm.com"
 
-    def __init__(self):
-        pass
+    # ---------- METHOD 1: DIRECT API ----------
+    def search_api(self, query="white t-shirt", limit=5):
+        print("🔎 Trying H&M API...")
 
-    async def search(self, query="white t-shirt", limit=5):
-        query_encoded = quote(query)
-        url = f"{self.BASE_API}?q={query_encoded}&page-size={limit}"
+        params = {
+            "q": query,
+            "touchPoint": "DESKTOP",
+            "pageSource": "search"
+        }
 
-        print("Calling H&M API:", url)
-
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                if resp.status != 200:
-                    print("❌ API error:", resp.status)
-                    return []
-
-                data = await resp.json()
-
-        products = []
+        headers = {
+            "User-Agent": "Mozilla/5.0",
+            "Accept": "application/json"
+        }
 
         try:
-            articles = data.get("results", [])
-        except:
-            print("❌ Unexpected API format")
+            res = requests.get(self.SEARCH_API, params=params, headers=headers)
+            data = res.json()
+        except Exception as e:
+            print("❌ API error:", e)
             return []
 
+        articles = data.get("articles") or data.get("results") or []
+        products = []
+
         for item in articles[:limit]:
-            try:
-                article_id = item.get("code")
-                name = item.get("name")
-                price = item.get("whitePrice", {}).get("formattedValue")
-
-                image = None
-                images = item.get("images", [])
-                if images:
-                    image = images[0].get("url")
-
-                url = f"https://www2.hm.com/en_us/productpage.{article_id}.html"
-
-                products.append({
-                    "name": name,
-                    "price": price,
-                    "image": image,
-                    "url": url,
-                    "retailer": "H&M"
-                })
-
-            except Exception as e:
-                print("Parse error:", e)
+            products.append({
+                "name": item.get("name"),
+                "price": item.get("price", {}).get("formattedValue"),
+                "url": self.BASE_URL + item.get("url", ""),
+                "image": (item.get("images") or [{}])[0].get("url"),
+                "retailer": "H&M"
+            })
 
         return products
 
 
-# Test runner
-if __name__ == "__main__":
-    async def run():
-        scraper = HMScraper()
-        results = await scraper.search("white t-shirt", 5)
+    # ---------- METHOD 2: PLAYWRIGHT ----------
+    async def search_playwright(self, query="white t-shirt", limit=5):
+        print("🌐 Trying Playwright scraping...")
 
-        print("\nRESULTS\n")
-        for r in results:
-            print(r)
+        url = f"{self.BASE_URL}/search-results.html?q={query.replace(' ', '+')}"
 
-    asyncio.run(run())
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=False)
+            page = await browser.new_page()
+
+            await page.goto(url)
+            await page.wait_for_timeout(5000)
+
+            items = page.locator('article, li')
+
+            results = []
+            count = await items.count()
+
+            for i in range(min(limit, count)):
+                card = items.nth(i)
+
+                try:
+                    name = await card.locator("h2, h3").inner_text()
+                except:
+                    name = "Unknown"
+
+                try:
+                    price = await card.locator("span").inner_text()
+                except:
+                    price = ""
+
+                try:
+                    link = await card.locator("a").get_attribute("href")
+                    link = self.BASE_URL + link if link and link.startswith("/") else link
+                except:
+                    link = ""
+
+                try:
+                    image = await card.locator("img").get_attribute("src")
+                except:
+                    image = ""
+
+                results.append({
+                    "name": name,
+                    "price": price,
+                    "url": link,
+                    "image": image,
+                    "retailer": "H&M"
+                })
+
+            await browser.close()
+            return results
+
+
+    # ---------- MAIN FUNCTION ----------
+    async def search(self, query="white t-shirt", limit=5):
+
+        # Try API first
+        api_results = self.search_api(query, limit)
+
+        if api_results:
+            print("✅ Got products from API")
+            return api_results
+
+        print("⚠️ API failed → Using Playwright")
+
+        return await self.search_playwright(query, limit)
