@@ -1,20 +1,36 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# SÉVEN
 
-# Run and deploy your AI Studio app
+SÉVEN is an early-stage AI system that helps people decide what to wear using natural language.
 
-This contains everything you need to run your app locally.
+Instead of browsing multiple clothing websites, a user can describe what they want, and SÉVEN generates a structured outfit suggestion using real products from fashion brands.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1VIY9xBcf5jY7_TgwU4qaD_q-AkHk2-Yu
+## Live Demo
 
-## Run Locally
+https://seven-dun-one.vercel.app/
 
-**Prerequisites:**  Node.js
+## What it does
 
+- Accepts outfit descriptions in plain language
+- Interprets the request using AI
+- Matches items to real fashion products
+- Returns outfit suggestions with images, prices, and links
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Current Status
+
+SÉVEN is in an early prototype stage. The system demonstrates the full flow from input to outfit output.
+
+## Tech Stack
+
+- Frontend: React / Vite
+- Backend: Python / FastAPI
+- Database: Supabase
+- AI: Gemini API
+- Deployment: Vercel
+
+## Why this matters
+
+Most fashion platforms help users browse. SÉVEN helps users decide.
+
+## Founder
+
+Gaurav
