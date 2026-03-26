@@ -3,7 +3,7 @@ services:
     name: seven-backend
     env: python
     rootDir: seven-backend
-    buildCommand: pip install -r requirements.txt && playwright install chromium --with-deps
+    buildCommand: pip install --no-build-isolation -r requirements.txt && playwright install chromium --with-deps
     startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
     envVars:
       - key: GEMINI_API_KEY
