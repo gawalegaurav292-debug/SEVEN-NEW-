@@ -1,0 +1,38 @@
+name: AI Autonomous Dev System
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  ai-system:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install deps
+        run: npm install axios fs
+
+      - name: Run AI Core
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node ai-core.js
+
+      - name: Commit Changes
+        run: |
+          git config --global user.name "ai-bot"
+          git config --global user.email "ai@bot.com"
+          git add .
+          git commit -m "AI Level 2 autonomous update" || echo "No changes"
+          git push
