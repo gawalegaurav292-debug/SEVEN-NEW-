@@ -17,7 +17,7 @@ from typing import Optional
 from google import genai
 from google.genai import types
 
-from app.scraper.sites.hm_scraper import HMScraper
+from app.scraper.hm_scraper import HMScraper
 
 logger = logging.getLogger(__name__)
 
