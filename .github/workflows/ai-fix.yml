@@ -1,0 +1,38 @@
+name: AI Auto Fix
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "What to fix"
+        required: true
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install openai requests
+
+      - name: Run AI Fix Script
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python scripts/ai_fix.py "${{ github.event.inputs.task }}"
+
+      - name: Commit & Push
+        run: |
+          git config --global user.name "AI Bot"
+          git config --global user.email "bot@ai.com"
+          git add .
+          git commit -m "AI Fix: ${{ github.event.inputs.task }}" || echo "No changes"
+          git push
