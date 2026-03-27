@@ -1,0 +1,39 @@
+name: Auto Deploy + Fix
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-and-fix:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install openai requests
+
+      - name: Run AI Fix Before Deploy
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python scripts/ai_fix_v2.py "fix backend before deploy"
+
+      - name: Commit fixes
+        run: |
+          git config --global user.name "AI Deploy Bot"
+          git config --global user.email "deploy@seven.ai"
+          git add .
+          git commit -m "AI Pre-Deploy Fix" || echo "No changes"
+          git push
+
+      - name: Trigger Render Deploy
+        run: |
+          curl -X POST https://api.render.com/deploy/srv-d722hup4tr6s73ef8vd0?key=QfvDIWXeMB0
