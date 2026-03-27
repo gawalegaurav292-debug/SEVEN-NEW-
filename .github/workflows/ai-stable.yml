@@ -1,0 +1,39 @@
+name: AI Stable System
+
+on:
+  push:
+  issues:
+    types: [opened]
+
+jobs:
+  run-ai:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Debug repo
+        run: ls -R
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install deps
+        run: |
+          npm init -y
+          npm install axios
+
+      - name: Run orchestrator safely
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -f orchestrator.js ]; then
+            node orchestrator.js
+          else
+            echo "orchestrator.js missing"
+            exit 1
+          fi
