@@ -1,0 +1,36 @@
+name: AI Self-Healing Agent
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  auto-fix:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install openai requests
+
+      - name: Run AI Agent
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python scripts/ai_fix_v2.py "auto detect and fix all backend issues"
+
+      - name: Commit & Push Fixes
+        run: |
+          git config --global user.name "AI Agent"
+          git config --global user.email "agent@seven.ai"
+          git add .
+          git commit -m "AI Auto-Fix: self-healing update" || echo "No changes"
+          git push
