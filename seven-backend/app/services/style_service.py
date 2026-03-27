@@ -16,7 +16,7 @@ import os
 import re
 from typing import Any, Dict, Optional
 
-from app.scraper.sites.hm_scraper import HMScraper
+from app.scraper.hm_scraper import HMScraper
 
 logger = logging.getLogger(__name__)
 
