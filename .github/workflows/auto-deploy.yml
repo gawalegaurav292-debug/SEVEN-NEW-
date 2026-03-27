@@ -1,39 +1,40 @@
-name: Auto Deploy + Fix
+name: Stable AI System
 
 on:
   push:
-    branches: [main]
+  issues:
+    types: [opened]
 
 jobs:
-  deploy-and-fix:
+  run-ai:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Debug repo files
+        run: ls -R
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
+          node-version: "20"
 
-      - name: Install deps
-        run: pip install openai requests
+      - name: Install dependencies
+        run: |
+          npm init -y
+          npm install axios
 
-      - name: Run AI Fix Before Deploy
+      - name: Check orchestrator
+        run: |
+          if [ ! -f orchestrator.js ]; then
+            echo "❌ orchestrator.js missing"
+            exit 1
+          fi
+
+      - name: Run AI system
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          python scripts/ai_fix_v2.py "fix backend before deploy"
-
-      - name: Commit fixes
-        run: |
-          git config --global user.name "AI Deploy Bot"
-          git config --global user.email "deploy@seven.ai"
-          git add .
-          git commit -m "AI Pre-Deploy Fix" || echo "No changes"
-          git push
-
-      - name: Trigger Render Deploy
-        run: |
-          curl -X POST https://api.render.com/deploy/srv-d722hup4tr6s73ef8vd0?key=QfvDIWXeMB0
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node orchestrator.js
