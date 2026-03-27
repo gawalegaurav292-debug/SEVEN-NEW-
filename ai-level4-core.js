@@ -1,3 +1,5 @@
+const { run } = require("./ai-executor");
+await run(parsed.actions);
 const fs = require("fs");
 const axios = require("axios");
 const { execSync } = require("child_process");
