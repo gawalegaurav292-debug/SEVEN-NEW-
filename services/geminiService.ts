@@ -196,10 +196,11 @@ export const generateOutfitTurntable = async (
 
   try {
     const masterPrompt =
-      `Photorealistic full-body fashion studio photograph of a ${gender.toLowerCase()} fashion model, ` +
-      `standing relaxed and centered, facing the camera, wearing exactly: ${outfitDescription}. ` +
-      `Clean seamless light off-white studio background, soft even editorial lighting, subtle soft floor shadow, ` +
-      `high-end luxury e-commerce campaign look, crisp fabric texture detail, sharp focus, 8k.`;
+      `Photorealistic full-body editorial fashion photograph of a ${gender.toLowerCase()} model, ` +
+      `standing relaxed with hands in pockets, centered, facing the camera, wearing exactly: ${outfitDescription}. ` +
+      `Bright seamless white studio background, high-key soft directional lighting, subtle realistic contact shadow ` +
+      `beneath the feet on the floor, luxury e-commerce campaign look, premium fabric texture detail, sharp focus, 8k. ` +
+      `The model fills the full 3:4 frame head-to-toe.`;
 
     const frame0 = await generateTurntableFrame(ai, masterPrompt);
     if (!frame0) throw new Error('master frame generation failed');

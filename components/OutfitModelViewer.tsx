@@ -11,18 +11,29 @@ interface ViewerItem {
 interface OutfitModelViewerProps {
   gender: 'Men' | 'Women';
   items: ViewerItem[];
+  verdict?: string;
 }
 
 const AUTO_ROTATE_DELAY_MS = 3500;
 const AUTO_ROTATE_INTERVAL_MS = 1400;
 const DRAG_PIXELS_PER_FRAME = 26;
 
-export const OutfitModelViewer: React.FC<OutfitModelViewerProps> = ({ gender, items }) => {
+// Inspired by the editorial verdict badges in the reference videos
+// (✨ POLISHED / 👍 GOOD / ✍ OBVIOUS).
+const deriveVerdict = (items: ViewerItem[], fallback: string = 'POLISHED'): string => {
+  const all = items.map(i => `${i.name || ''} ${i.brand || ''}`).join(' ').toLowerCase();
+  if (/formal|suit|blazer|coat|trench|tailored/.test(all)) return 'SHARP';
+  if (/hoodie|sneaker|jean|t-shirt|tee|casual/.test(all)) return 'GOOD';
+  if (/shirt|polo|chino|loafer/.test(all)) return 'POLISHED';
+  if (/bold|graphic|statement|jersey|print/.test(all)) return 'OBVIOUS';
+  return fallback;
+};
+
+export const OutfitModelViewer: React.FC<OutfitModelViewerProps> = ({ gender, items, verdict }) => {
   const [frames, setFrames] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasDragged, setHasDragged] = useState(false);
 
-  // Float rotation position; frame index = round(position) mod frame count.
   const positionRef = useRef(0);
   const [activeFrame, setActiveFrame] = useState(0);
 
@@ -43,6 +54,8 @@ export const OutfitModelViewer: React.FC<OutfitModelViewerProps> = ({ gender, it
     () => items.map(i => `${i.brand || ''}:${i.name || ''}`).sort().join('|'),
     [items]
   );
+
+  const displayVerdict = verdict || useMemo(() => deriveVerdict(items), [items]);
 
   useEffect(() => {
     let cancelled = false;
@@ -105,16 +118,13 @@ export const OutfitModelViewer: React.FC<OutfitModelViewerProps> = ({ gender, it
   const scheduleAutoRotate = useCallback(() => {
     if (autoTimerRef.current !== null) window.clearTimeout(autoTimerRef.current);
     if (!isSpin) return;
-    autoTimerRef.current = window.setTimeout(() => {
+    autoTimerRef.current = window.setTimeout(function spin() {
       applyPosition(positionRef.current + 1);
-      autoTimerRef.current = window.setTimeout(function tick() {
-        applyPosition(positionRef.current + 1);
-        autoTimerRef.current = window.setTimeout(tick, AUTO_ROTATE_INTERVAL_MS);
-      }, AUTO_ROTATE_INTERVAL_MS);
+      autoTimerRef.current = window.setTimeout(spin, AUTO_ROTATE_INTERVAL_MS);
     }, AUTO_ROTATE_DELAY_MS);
   }, [applyPosition, isSpin]);
 
-  // Touch/mouse drag scrubbing. pan-y keeps vertical page scroll alive.
+  // Drag scrubbing — pan-y keeps vertical page scroll alive.
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isSpin) return;
     stopMomentum();
@@ -194,11 +204,26 @@ export const OutfitModelViewer: React.FC<OutfitModelViewerProps> = ({ gender, it
         />
       ))}
 
+      {/* Verdict badges — matches the editorial badges in the reference videos */}
+      <div className="absolute top-5 left-1/2 -translate-x-1/2 pointer-events-none z-10">
+        <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-black text-white rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg">
+          <span className="w-1 h-1 bg-white rounded-full"></span>
+          {displayVerdict}
+        </span>
+      </div>
+
+      {/* SÉVEN watermark — replaces the @HOLYDRIP.CLUB branding in the reference */}
+      <div className="absolute bottom-4 left-4 pointer-events-none z-10">
+        <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-black/25">
+          SÉVEN
+        </span>
+      </div>
+
       {isSpin && !hasDragged && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-white/85 backdrop-blur-md rounded-full shadow-sm pointer-events-none">
+        <div className="absolute bottom-4 right-4 flex items-center gap-2 px-3 py-2 bg-white/85 backdrop-blur-md rounded-full shadow-sm pointer-events-none z-10">
           <RotateCw size={12} className="text-black" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-black">
-            Drag to rotate
+          <span className="text-[9px] font-bold uppercase tracking-widest text-black">
+            Drag
           </span>
         </div>
       )}
