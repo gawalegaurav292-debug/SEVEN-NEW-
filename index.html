@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -7,20 +8,207 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+      :root {
+        --app-bg: #ffffff;
+        --app-fg: #111111;
+        --safe-top: env(safe-area-inset-top, 20px);
+        --safe-bottom: env(safe-area-inset-bottom, 20px);
+        --app-max-width: 480px;
+      }
+
+      /* Global Reset */
       * {
-        -webkit-tap-highlight-color: transparent;
-        outline: none !important;
-        -webkit-font-smoothing: antialiased;
-        box-sizing: border-box;
-      }
-      body {
         margin: 0;
-        background-color: #ffffff;
-        color: #000000;
-        font-family: 'Inter', sans-serif;
-        overflow-x: hidden;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+        pointer-events: auto;
       }
-      
+
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: var(--app-bg);
+        color: var(--app-fg);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 16px;
+        font-weight: 500;
+        -webkit-font-smoothing: antialiased;
+        overflow: hidden;
+      }
+
+      #root {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Typography */
+      h1, .title {
+        font-size: 32px;
+        font-weight: 500;
+        color: #000;
+        margin-bottom: 16px;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+      }
+
+      h2 {
+        font-size: 20px;
+        font-weight: 500;
+        color: #000;
+        letter-spacing: -0.02em;
+      }
+
+      p, .subtitle {
+        font-size: 16px;
+        color: #333;
+        line-height: 1.6;
+        letter-spacing: -0.01em;
+        font-weight: 500;
+      }
+
+      .label-text {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        font-weight: 600;
+        color: #666;
+      }
+
+      /* --- CORE LAYOUT ENGINE --- */
+
+      .screen {
+        height: 100%;
+        width: 100%;
+        position: relative;
+        background: #fff;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Scrollable content only */
+      .scroll-area {
+        height: 100%;
+        width: 100%;
+        overflow-y: auto;
+        padding: 24px;
+        padding-bottom: 240px;
+        box-sizing: border-box;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+      }
+      .scroll-area::-webkit-scrollbar { display: none; }
+
+      /* Fixed bottom CTA - SAFE ANCHOR */
+      .fixed-cta {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: env(safe-area-inset-bottom, 0px);
+        padding-bottom: 16px;
+        z-index: 10000;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        background: transparent;
+        pointer-events: none;
+      }
+
+      .continue-btn {
+        width: calc(100% - 32px);
+        max-width: 420px;
+        height: 52px;
+        border-radius: 14px;
+        background: #000;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        transition: transform 0.2s active;
+        pointer-events: auto;
+      }
+
+      .continue-btn:active {
+        transform: scale(0.98);
+      }
+
+      .continue-btn:disabled {
+        background: #f0f0f0;
+        color: #aaa;
+        box-shadow: none;
+        cursor: default;
+      }
+
+      /* Component Styles */
+      .option-card {
+        width: 100%;
+        padding: 22px 24px;
+        border-radius: 16px;
+        border: 1px solid #eee;
+        background: #fff;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .option-card:active { transform: scale(0.98); background: #f8f8f8; }
+      .option-card.selected {
+        border-color: #000;
+        background-color: #fafafa;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+      }
+
+      .option-card span {
+        font-weight: 500;
+        font-size: 16px;
+        color: #000;
+        letter-spacing: -0.01em;
+      }
+
+      /* Inputs */
+      .premium-input, .typing-pad {
+        width: 100%;
+        padding: 20px;
+        font-size: 16px;
+        font-weight: 500;
+        border-radius: 16px;
+        border: 1px solid #e5e5e5;
+        background: #fff;
+        outline: none;
+        transition: border-color 0.2s ease;
+        color: #000;
+        font-family: inherit;
+        -webkit-appearance: none;
+        text-align: left;
+        text-transform: none;
+      }
+
+      .typing-pad {
+        min-height: 160px;
+        resize: none;
+        line-height: 1.5;
+      }
+
+      .premium-input:focus, .typing-pad:focus {
+        border-color: #000;
+      }
+
+      .animate-fade { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
       @keyframes progress {
         from { width: 0%; }
         to { width: 100%; }
@@ -73,29 +261,53 @@
         cursor: pointer;
         margin-top: -6.5px;
       }
+
+      /* Splash Screen */
+      .splash {
+        position: fixed;
+        inset: 0;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      }
+      .splash-logo {
+        font-size: 32px;
+        font-weight: 500;
+        letter-spacing: 0.3em;
+        color: #000;
+        animation: breath 3.5s ease-in-out infinite;
+        text-transform: uppercase;
+        padding-left: 0.3em;
+      }
+      @keyframes breath {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(0.98); }
+      }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "react": "https://esm.sh/react@^19.2.4",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.40.0",
-    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
-    "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
-    "recharts": "https://esm.sh/recharts@^3.7.0",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.4",
-    "vite": "https://esm.sh/vite@^7.3.1",
-    "express": "https://esm.sh/express@^5.2.1",
-    "pg": "https://esm.sh/pg@^8.18.0",
-    "cors": "https://esm.sh/cors@^2.8.6",
-    "crypto": "https://esm.sh/crypto@^1.0.1",
-    "p-limit": "https://esm.sh/p-limit@^7.3.0",
-    "node-fetch": "https://esm.sh/node-fetch@^3.3.2"
-  }
-}
-</script>
-</head>
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@^19.2.3",
+        "react-dom": "https://esm.sh/react-dom@^19.2.3",
+        "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0",
+        "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+        "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "recharts": "https://esm.sh/recharts@^3.6.0",
+        "pg": "https://esm.sh/pg@^8.16.3",
+        "crypto": "https://esm.sh/crypto@^1.0.1",
+        "express": "https://esm.sh/express@^5.2.1",
+        "p-limit": "https://esm.sh/p-limit@^7.2.0",
+        "node-fetch": "https://esm.sh/node-fetch@^3.3.2",
+        "cors": "https://esm.sh/cors@^2.8.5"
+      }
+    }
+    </script>
+  </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
